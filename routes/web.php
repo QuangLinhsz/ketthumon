@@ -3,8 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\BannerController;
+use App\Http\Controllers\CategoryController;   
+use App\Http\Controllers\BillController;  
+use App\Http\Controllers\BannerController;  
+use App\Http\Controllers\TypeController; 
+use App\Http\Controllers\ContactsController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -20,100 +23,103 @@ use App\Http\Controllers\BannerController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/hello', function () {
-    return view('hello');
+Route::get('/type', function () {
+    return view('product_type');
 });
+Route::get('/about', function () {
+    return view('about');
+});
+Route::get('/contacts', function () {
+    return view('contacts');
+});
+//shopping_cart
+Route::get('/sh',[PageController::class, 'showCart'])->name('shopping_cart');
+Route::post('/update-cart', [PageController::class, 'updateCart'])->name('update_cart');
+
+Route::post('/getLike/{id}', [PageController::class, 'getLike'])->name('getLike');
+
+Route::get('/tc',[PageController::class, 'index']);
+Route::get('/',[PageController::class, 'index'])->name('trangchu.trangchu');
+Route::get('ct/{id}',[PageController::class, 'show'])->name('show'); 
+Route::get('tc/{id}',[PageController::class, 'producttype'])->name('producttype'); 
+Route::get('add-to-cart/{id}',[PageController::class,'addToCart'])->name('banhang.addToCart');
+
+Route::get('del-cart/{id}',[PageController::class,'delCartItem'])->name('banhang.xoagiohang');
+
+Route::get('Checkout',[PageController::class,'getCheckout'])->name('banhang.getdathang');
+Route::post('Checkout',[PageController::class,'postCheckout'])->name('banhang.postdathang');
 
 
-//trang chủ
-Route::resource('products', PageController::class);
-Route::get('/products/index/{id}', [PageController::class, 'index'])->name('product.index');
-Route::get('/products/category/{id}', [PageController::class, 'category'])->name('product.category');
-Route::get('/products/show/{id}', [PageController::class, 'show'])->name('product.show');
-Route::post('/add-to-cart/{id}', [PageController::class, 'addToCart'])->name('add-to-cart');
-Route::delete('/delete-item/{id}', [PageController::class, 'delCartItem'])->name('delete-item');
-Route::post('/update-cart/{id}', [PageController::class, 'cartUpdate'])->name('update-cart');
-Route::post('/add-many-to-cart/{id}', [PageController::class, 'addManyToCart'])->name('add-many-to-cart');
-Route::get('/contacts', [PageController::class, 'contacts'])->name('product.contacts');
-Route::get('/about', [PageController::class, 'about'])->name('product.about');
+//đăng ký và đăng nhập của khách hàng
+Route::get('dangky',[PageController::class,'getSignin'])->name('getsignin');
+Route::post('dangky',[PageController::class,'postSignin'])->name('postsignin');
 
-// Route quản lý sản phẩm
-Route::get('sanpham', [PageController::class, 'getProList'])->name('getProList');
-Route::get('them-sanpham', [PageController::class, 'getProAdd'])->name('product.getProAdd');
-Route::post('them-sanpham', [PageController::class, 'postProAdd'])->name('product.postProAdd');
-Route::get('xoa-sanpham/{id}', [PageController::class, 'getProDelete'])->name('product.getProDelete');
-Route::post('xoa-sanpham/{id}', [PageController::class, 'getProDelete'])->name('product.getProDelete');
-Route::get('sua-sanpham/{id}', [PageController::class, 'getProEdit'])->name('product.getProEdit');
-Route::post('sua-sanpham/{id}', [PageController::class, 'postProEdit'])->name('product.postProEdit');
+/*------ phần quản trị ----------*/
+Route::get('admin/dangnhap',[UserController::class,'getLogin'])->name('admin.getLogin');
+Route::post('admin/dangnhap',[UserController::class,'postLogin'])->name('admin.postLogin');
+Route::get('admin/dangxuat',[UserController::class,'getLogout']);
 
-//Trang giỏ hàng
-Route::get('/shopping_cart', [PageController::class, 'shopping_cart'])->name('product.shopping_cart');
-Route::post('/shopping_cart', [PageController::class, 'postshopping_cart'])->name('postshopping_cart');
 
-//Trang thanh toán
-Route::get('/checkout', [PageController::class, 'checkout'])->name('product.checkout');
-Route::post('/checkout',  [PageController::class, 'postCheckout'])->name('postCheckout');
 
-//Trang đăng kí
-Route::get('/signup',[PageController::class,'getSignin'])->name('getSignin');
-Route::post('/signup',[PageController::class,'postSignin'])->name('postsignin');
-
-//Trang đăng nhập
-Route::get('/login',[UserController::class,'getLogin'])->name('getLogin');
-Route::post('/login',[UserController::class,'postLogin'])->name('postLogin');
-Route::get('/dangxuat',[UserController::class,'getLogout']);
-
-// Route quản lí người dùng
-Route::get('nguoidung', [UserController::class, 'getUserList'])->name('getUserList');
-Route::get('them-nguoidung', [UserController::class, 'getUserAdd'])->name('product.getUserAdd');
-Route::post('them-nguoidung', [UserController::class, 'postUserAdd'])->name('product.postUserAdd');
-Route::post('xoa-nguoidung/{id}',[UserController::class, 'getUserDelete'])->name('product.getUserDelete');
-Route::get('xoa-nguoidung/{id}', [UserController::class, 'getUserDelete'])->name('product.getUserDelete');
-Route::get('sua-nguoidung/{id}', [UserController::class, 'getUserEdit'])->name('product.getUserEdit');
-Route::post('sua-nguoidung/{id}', [UserController::class, 'postUserEdit'])->name('product.postUserEdit');
-
-// Route quản lí banner
-Route::get('banner', [BannerController::class, 'getBanList'])->name('getBanList');
-Route::get('add-banner', [BannerController::class, 'getBanAdd'])->name('product.getBanAdd');
-Route::post('add-banner', [BannerController::class, 'postBanAdd'])->name('product.postBanAdd');
-Route::post('delete-banner/{id}',[BannerController::class, 'getBanDelete'])->name('product.getBanDelete');
-Route::get('delete-banner/{id}', [BannerController::class, 'getBanDelete'])->name('product.getBanDelete');
-Route::get('edit-banner/{id}', [BannerController::class, 'getBanEdit'])->name('product.getBanEdit');
-Route::post('edit-banner/{id}', [BannerController::class, 'postBanEdit'])->name('product.postBanEdit');
-
-Route::group(['prefix' => 'admin', 'middleware' => 'productsLogin'], function () {
+Route::group(['prefix'=>'admin','middleware'=>'adminLogin'],function(){
    
     Route::group(['prefix'=>'category'],function(){
-        // products/category/danhsach....................quản lí danh mục
-        Route::get('danhsach', [CategoryController::class, 'getCateList'])->name('getCateList');
-        // products/category/them
-        Route::get('them',[CategoryController::class,'getCateAdd'])->name('product.getCateAdd');
-        Route::post('them',[CategoryController::class,'postCateAdd'])->name('product.postCateAdd');
-        Route::get('xoa/{id}',[CategoryController::class,'getCateDelete'])->name('product.getCateDelete');
-        Route::get('sua/{id}',[CategoryController::class,'getCateEdit'])->name('product.getCateEdit');
-        Route::post('sua/{id}',[CategoryController::class,'postCateEdit'])->name('product.postCateEdit');
+        // admin/category/danhsach
+        Route::get('danhsach',[CategoryController::class,'getCateList'])->name('admin.getCateList');
+        // admin/category/them
+        Route::get('them',[CategoryController::class,'getCateAdd'])->name('admin.getCateAdd');
+        Route::post('them',[CategoryController::class,'postCateAdd'])->name('admin.postCateAdd');
+        Route::delete('xoa/{id}',[CategoryController::class,'getCateDelete'])->name('admin.getCateDelete');
+        Route::get('sua/{id}',[CategoryController::class,'getCateEdit'])->name('admin.getCateEdit');
+        Route::put('sua/{id}',[CategoryController::class,'postCateEdit'])->name('admin.postCateEdit');
     });
-    Route::post('/categories', [CategoryController::class, 'postCateAdd'])->name('categories.store');
-    Route::get('/categories/{id}/edit', [CategoryController::class, 'getCateEdit'])->name('categories.getCateEdit');
-    Route::post('/products/category/{id}/edit', [CategoryController::class, 'postCateEdit'])->name('categories.postCateEdit');
-    Route::post('/products/category/xoa/{id}', [CategoryController::class, 'getCateDelete'])->name('categories.getCateDelete');
-
-
-
- 
-
-    //viết tiếp các route khác cho crud products, users,.... thì viết tiếp
-
     Route::group(['prefix'=>'bill'],function(){
-        // products/bill/{status}
-        Route::get('{status}',[BillController::class,'getBillList'])->name('products.getBillList');
-        //phần bill này không nhất thiết phải dùng request ajax, làm như những hàm bình thường, phần route này cô vẫn để lại để tham khảo
-        //by laravel request
-        Route::get('{id}/{status}',[BillController::class,'updateBillStatus'])->name('products.updateBillStatus');
-        //by ajax request
-        Route::post('updateBillStatusAjax',[BillController::class,'updateBillStatusAjax'])->name('products.updateBillStatusAjax');
-       
-        Route::post('{id}',[BillController::class,'cancelBill'])->name('products.cancelBill');
-    });
+            Route::get('danhsachbill',[BillController::class,'listBillAll'])->name('admin.listBillAll');
+            // admin/bill/{status}
+            Route::get('{status}',[BillController::class,'getBillList'])->name('admin.getBillList');
+            //phần bill này không nhất thiết phải dùng request ajax, làm như những hàm bình thường, phần route này cô vẫn để lại để tham khảo
+            //by laravel request
+            Route::get('{id}/{status}',[BillController::class,'updateBillStatus'])->name('admin.updateBillStatus');
+            //by ajax request
+            Route::post('updatebill/{id}', [BillController::class, 'updateBillStatusAjax'])->name('admin.updateBillStatusAjax');
+           
+            Route::delete('deletebill/{id}',[BillController::class,'cancelBill'])->name('admin.cancelBill');
+        });
+        Route::group(['prefix'=>'quanlyuser'],function(){
+            Route::get('danhsach',[UserController::class,'index'])->name('admin.getUserList');
+            Route::get('sua/{id}',[UserController::class,'edit'])->name('admin.getUserEdit');
+            Route::put('sua/{id}',[UserController::class,'update'])->name('admin.postUserEdit');
+            Route::delete('xoa/{id}',[UserController::class,'destroy'])->name('admin.getUserDelete');
+        });
+        Route::group(['prefix'=>'banner'],function(){
+            Route::get('danhsach',[BannerController::class,'index'])->name('admin.getBannerList');
+            Route::get('them',[BannerController::class,'getBannerAdd'])->name('admin.getBannerAdd');
+            Route::post('them',[BannerController::class,'postBannerAdd'])->name('admin.postBannerAdd');
+            Route::get('sua/{id}',[BannerController::class,'edit'])->name('admin.getBannerEdit');
+            Route::put('sua/{id}',[BannerController::class,'update'])->name('admin.postBannerEdit');
+            Route::delete('xoa/{id}',[BannerController::class,'destroy'])->name('admin.getBannerDelete');
+        });
+        Route::group(['prefix'=>'typeproducts'],function(){
+            // admin/category/danhsach
+            Route::get('danhsach',[TypeController::class,'getTypeList'])->name('admin.getTypeList');
+            // admin/category/them
+            Route::get('them',[TypeController::class,'getTypeAdd'])->name('admin.getTypeAdd');
+            Route::post('them',[TypeController::class,'postTypeAdd'])->name('admin.postTypeAdd');
+            Route::delete('xoa/{id}',[TypeController::class,'getTypeDelete'])->name('admin.getTypeDelete');
+            Route::get('sua/{id}',[TypeController::class,'getTypeEdit'])->name('admin.getTypeEdit');
+            Route::put('sua/{id}',[TypeController::class,'postTypeEdit'])->name('admin.postTypeEdit');
+        });
+        Route::group(['prefix'=>'contacts'],function(){
+            Route::get('danhsach',[ContactsController::class,'listLhAll'])->name('admin.listLhAll');
+            // admin/bill/{status}
+            Route::get('{trangthai}',[ContactsController::class,'getLhList'])->name('admin.getLhList');
+            //phần bill này không nhất thiết phải dùng request ajax, làm như những hàm bình thường, phần route này cô vẫn để lại để tham khảo
+            //by laravel request
+            Route::get('{id}/{trangthai}',[ContactsController::class,'updateLhStatus'])->name('admin.updateLhStatus');
+            //by ajax request
+            Route::post('updatelh/{id}', [ContactsController::class, 'updateLhStatusAjax'])->name('admin.updateLhStatusAjax');
+           
+            Route::delete('deletelh/{id}',[ContactsController::class,'cancelLh'])->name('admin.cancelLh');
+        });
 
 });

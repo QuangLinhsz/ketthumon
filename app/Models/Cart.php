@@ -54,66 +54,22 @@ class Cart extends Model
 		$this->totalQty +=$soluong;
 		$this->totalPrice += ($item->promotion_price==0?$item->unit_price:$item->promotion_price) * $soluong;
 	}
-//xóa 1
-public function reduceByOne($id){
-    if(isset($this->items[$id])){
-        $this->items[$id]['qty']--;
-        $this->items[$id]['price'] -= $this->items[$id]['item']['price'];
-        $this->totalQty--;
-        $this->totalPrice -= $this->items[$id]['item']['price'];
-        if($this->items[$id]['qty']<=0){
-            unset($this->items[$id]);
-        }
-    }
-}
-
-//xóa nhiều
-public function removeItem($id){
-    if(isset($this->items[$id])){
-        $this->totalQty -= $this->items[$id]['qty'];
-        $this->totalPrice -= $this->items[$id]['price'];
-        unset($this->items[$id]);
-    }
-}
-
-public function calculateTotalPrice()
-{
-	$totalPrice = 0;
-
-	foreach ($this->items as $item) {
-		$totalPrice += $item['price'];
+	//xóa 1
+	public function reduceByOne($id){
+		$this->items[$id]['qty']--;
+		$this->items[$id]['price'] -= $this->items[$id]['item']['price'];
+		$this->totalQty--;
+		$this->totalPrice -= $this->items[$id]['item']['price'];
+		if($this->items[$id]['qty']<=0){
+			unset($this->items[$id]);  //hàm unset(): xóa giá trị của biến
+		}
+	}
+	//xóa nhiều
+	public function removeItem($id){
+		$this->totalQty -= $this->items[$id]['qty'];
+		$this->totalPrice -= $this->items[$id]['price'];
+		unset($this->items[$id]);
 	}
 
-	$this->totalPrice = $totalPrice;
-}
-
-public function updateItem($item, $id, $quantity) {
-    $oldQty = $this->items[$id]['qty'];
-    $oldPrice = $this->items[$id]['price'];
-
-    $this->items[$id]['qty'] = $quantity;
-    $this->items[$id]['price'] = $quantity * $item->price;
-
-    $this->totalQty += ($quantity - $oldQty);
-    $this->totalPrice += ($this->items[$id]['price'] - $oldPrice);
-}
-
 
 }
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
- 
-

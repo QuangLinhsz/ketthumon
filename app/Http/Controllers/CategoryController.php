@@ -3,99 +3,146 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Category;
-use App\Models\Level;
-use  App\Models\User;
+use App\Models\Typeproduct;
+use App\Models\Product;
 
 class CategoryController extends Controller
 {
-    // Phương thức hiển thị danh sách các mục danh mục
-    public function getCateList()
-    {
-        $categories = Category::all();
-        //dd($categories);
-        return view('product.danhsach', ['categories' => $categories]);
+    //
+    public function getCateList(){
+        $products=Product::orderBy('created_at', 'desc')->get();
+        return view('admin.category.danhsach',compact('products'));
     }
-
-    // Phương thức hiển thị form thêm mới mục danh mục
-    public function getCateAdd()
-    {
-        
-        return view('product.cate-add');
+    public function getCateAdd(){
+        $products=Typeproduct::all();
+        return view('admin.category.them',compact('products'));
     }
+    public function postCateAdd(Request $request){
+        $name='';
+        if($request->hasfile('image')){
+            $this->validate($request,[
+                'image'=>'mimes:jpg,png,gif,jpeg|max: 2048',
+                'name'=>'required',
+                'description'=>'required',
+                'unit_price'=>'required|numeric',
+                'promotion_price'=>'required|numeric',
+            ],[
+                'image.mimes'=>'Chỉ chấp nhận file hình ảnh',
+                'image.max'=>'Chỉ chấp nhận hình ảnh dưới 2Mb',
+                'name.required'=>'Bạn chưa nhập mô tả',
+                'description.required'=>'Bạn chưa nhập mô tả',
+                'unit_price.required'=>'Bạn chưa nhập giá tiền',
+                'unit_price.numeric'=>'Giá tiền phải là kiểu số',
+                'promotion_price.required'=>'Bạn chưa nhập giá giảm',
+                'promotion_price.numeric'=>'Giá giảm phải là kiểu số',
 
-    // Phương thức xử lý thêm mới mục danh mục
-    public function postCateAdd(Request $request)
-    {
-        // Validate the incoming request data
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        // Store the category data
-        $category = new Category();
-        $category->name = $request->name;
-        $category->description = $request->description;
-
-        // Upload the image
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            ]);
             $file = $request->file('image');
-            $name = $file->getClientOriginalName();
-            $destinationPath = public_path('category');
-            $file->move($destinationPath, $name);
-            $category->image = $name;
+            $name=time().'_'.$file->getClientOriginalName();
+            $destinationPath=public_path('/source/image/product'); //project\public\car, public_path(): trả về đường dẫn tới thư mục public
+            $file->move($destinationPath, $name); //lưu hình ảnh vào thư mục public/car
         }
-
-        $category->save();
-
-        return redirect('/products/category/danhsach')->with('success', 'Thêm mục danh mục thành công');
-    }
-
-    // Phương thức hiển thị form sửa mục danh mục
-    public function getCateEdit($id)
-    {
-        $category = Category::find($id);
-        return view('product.cate-edit', compact('category'));
-    }
-
-    // Phương thức xử lý cập nhật mục danh mục
-    public function postCateEdit(Request $request, $id)
-    {
-        // Validate the incoming request data
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        else{
+        $this->validate($request,[
+            'name'=>'required',
+            'description'=>'required',
+            'unit_price'=>'required|numeric',
+            'promotion_price'=>'required|numeric',
+        ],[
+            'name.required'=>'Bạn chưa nhập mô tả',
+            'description.required'=>'Bạn chưa nhập mô tả',
+            'unit_price.required'=>'Bạn chưa nhập giá tiền',
+            'unit_price.numeric'=>'Giá tiền phải là kiểu số',
+            'promotion_price.required'=>'Bạn chưa nhập giá giảm',
+            'promotion_price.numeric'=>'Giá giảm phải là kiểu số',
         ]);
-
-        // Retrieve the category based on the $id
-        $category = Category::findOrFail($id);
-        $category->name = $request->name;
-        $category->description = $request->description;
-
-        // Upload the image if a new one is provided
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            $file = $request->file('image');
-            $name = $file->getClientOriginalName();
-            $destinationPath = public_path('category');
-            $file->move($destinationPath, $name);
-            $category->image = $name;
         }
-
-        $category->save();
-
-        return redirect('/products/category/danhsach')->with('success', 'Cập nhật danh mục thành công');
+        $products=new Product();
+        $products->name=$request->name;
+        $products->id_type=$request->id_type;
+        $products->description=$request->description;
+        $products->unit_price=$request->unit_price;
+        $products->promotion_price=$request->promotion_price;
+        $products->image=$name;
+        $products->unit=$request->unit;
+        $myCheckboxValue = $request->input('new');
+        if ($myCheckboxValue == '1') {
+            $products->new = 1;
+        } else {
+            $products->new = 0;
+        }
+        $products->save();
+        return redirect()->route('admin.getCateList')->with('success','Bạn đã thêm thành công!');  
     }
-
-    // Phương thức xử lý xóa mục danh mục
-    public function getCateDelete($id)
-    {
-        $category = Category::findOrFail($id);
-        $category->delete();
-
-        return redirect('/products/category/danhsach')->with('success', 'Xóa danh mục thành công');
+    public function getCateDelete(string $id){
+        $products = Product::find($id);
+        $products->delete();
+        return redirect()->route('admin.getCateList')->with('success','Bạn đã xóa thành công!');
     }
- 
+    public function getCateEdit(string $id){
+        $products=Product::where('id',$id)->get();
+        $typeproduct=Typeproduct::all();
+        return view('admin.category.sua',array('products'=>$products),compact('typeproduct'));
+    }
+    public function postCateEdit(Request $request, string $id){
+        $name='';
+        if($request->hasfile('image')){
+            $this->validate($request,[
+                'image'=>'mimes:jpg,png,gif,jpeg|max: 2048',
+                'name'=>'required',
+                'description'=>'required',
+                'unit_price'=>'required|numeric',
+                'promotion_price'=>'required|numeric',
+            ],[
+                'image.mimes'=>'Chỉ chấp nhận file hình ảnh',
+                'image.max'=>'Chỉ chấp nhận hình ảnh dưới 2Mb',
+                'name.required'=>'Bạn chưa nhập mô tả',
+                'description.required'=>'Bạn chưa nhập mô tả',
+                'unit_price.required'=>'Bạn chưa nhập giá tiền',
+                'unit_price.numeric'=>'Giá tiền phải là kiểu số',
+                'promotion_price.required'=>'Bạn chưa nhập giá giảm',
+                'promotion_price.numeric'=>'Giá giảm phải là kiểu số',
+
+            ]);
+            $file = $request->file('image');
+            $name=time().'_'.$file->getClientOriginalName();
+            $destinationPath=public_path('/source/image/product'); //project\public\car, public_path(): trả về đường dẫn tới thư mục public
+            $file->move($destinationPath, $name); //lưu hình ảnh vào thư mục public/car
+        }
+        else{
+        $this->validate($request,[
+            'name'=>'required',
+            'description'=>'required',
+            'unit_price'=>'required|numeric',
+            'promotion_price'=>'required|numeric',
+        ],[
+            'name.required'=>'Bạn chưa nhập mô tả',
+            'description.required'=>'Bạn chưa nhập mô tả',
+            'unit_price.required'=>'Bạn chưa nhập giá tiền',
+            'unit_price.numeric'=>'Giá tiền phải là kiểu số',
+            'promotion_price.required'=>'Bạn chưa nhập giá giảm',
+            'promotion_price.numeric'=>'Giá giảm phải là kiểu số',
+        ]);
+        }
+        $products=Product::find($id);
+        $products->name=$request->name;
+        $products->id_type=$request->id_type;
+        $products->description=$request->description;
+        $products->unit_price=$request->unit_price;
+        $products->promotion_price=$request->promotion_price;
+        if($name=='')
+        {
+            $name=$products->image;
+        }
+        $products->image=$name;
+        $products->unit=$request->unit;
+        $myCheckboxValue = $request->input('new');
+        if ($myCheckboxValue == '1') {
+            $products->new = 1;
+        } else {
+            $products->new = 0;
+        }
+        $products->save();
+        return redirect()->route('admin.getCateList')->with('success','Bạn đã sữa thành công!');  
+    }
 }

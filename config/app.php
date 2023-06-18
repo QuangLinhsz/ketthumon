@@ -55,8 +55,6 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
-    'public' => env('APP_URL', 'http://localhost').'/public',
-
 
     'asset_url' => env('ASSET_URL'),
 
